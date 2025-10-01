@@ -6,11 +6,10 @@ from google.cloud import dialogflow
 from datetime import datetime, timedelta
 
 # --- Credentials ---
-DB_HOST = "postgresql://postgres:[YOUR-PASSWORD]@db.lzqmvfueyiugigqrwhhx.supabase.co:5432/postgres
-"
+DB_HOST = "db.lzqmvfueyiugigqrwhhx.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
-DB_PASS = "Nqn7LbKSm8wUOOWS"
+DB_PASS = "તમારો સિક્રેટ પાસવર્ડ અહીં પેસ્ટ કરો" # <-- ફક્ત તમારો પાસવર્ડ અહીં નાખો
 DB_PORT = "5432"
 
 TWILIO_ACCOUNT_SID = "ACecdb9f6cbd2c0b8e0b2b2591fd130ff9"
@@ -104,11 +103,14 @@ def gather():
         response.redirect('/voice')
     return str(response)
 
+# --- સુધારેલો ભાગ અહીં છે ---
+# આ કોડ gunicorn દ્વારા સર્વર શરૂ થાય ત્યારે આપમેળે ડેટાબેઝ ટેબલ્સ બનાવે છે
+with app.app_context():
+    setup_database()
+
 if __name__ == "__main__":
     if 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
         print("Error: GOOGLE_APPLICATION_CREDENTIALS environment variable is not set.")
     else:
-        with app.app_context():
-            setup_database()
-        print(">>> Voice Bot Server is running...")
+        print(">>> Voice Bot Server is running locally...")
         app.run(host='0.0.0.0', port=5000)
