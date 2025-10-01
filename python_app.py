@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 DB_HOST = "db.lzqmvfueyiugigqrwhhx.supabase.co"
 DB_NAME = "postgres"
 DB_USER = "postgres"
-DB_PASS = "તમારો સિક્રેટ પાસવર્ડ અહીં પેસ્ટ કરો" # <-- ફક્ત તમારો પાસવર્ડ અહીં નાખો
+DB_PASS = "Nqn7LbKSm8wUOOWS"
 DB_PORT = "5432"
 
 TWILIO_ACCOUNT_SID = "ACecdb9f6cbd2c0b8e0b2b2591fd130ff9"
@@ -114,3 +114,4 @@ if __name__ == "__main__":
     else:
         print(">>> Voice Bot Server is running locally...")
         app.run(host='0.0.0.0', port=5000)
+
