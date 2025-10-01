@@ -1,6 +1,6 @@
 import os
 import psycopg2
-from flask import Flask, request
+from flask import Flask, render_template, request, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from google.cloud import dialogflow
 from datetime import datetime, timedelta
@@ -103,7 +103,6 @@ def gather():
         response.redirect('/voice')
     return str(response)
 
-# --- સુધારેલો ભાગ અહીં છે ---
 # આ કોડ gunicorn દ્વારા સર્વર શરૂ થાય ત્યારે આપમેળે ડેટાબેઝ ટેબલ્સ બનાવે છે
 with app.app_context():
     setup_database()
@@ -114,4 +113,3 @@ if __name__ == "__main__":
     else:
         print(">>> Voice Bot Server is running locally...")
         app.run(host='0.0.0.0', port=5000)
-
