@@ -1,27 +1,30 @@
 import os
 import psycopg2
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request
 from twilio.twiml.voice_response import VoiceResponse, Gather
 from google.cloud import dialogflow
 from datetime import datetime, timedelta
 
 # --- Credentials ---
-DB_HOST = "db.lzqmvfueyiugigqrwhhx.supabase.co"
+# કૃપા કરીને નીચેની વિગતો ફરીથી ધ્યાનથી ભરો
+DB_HOST = "db.lzqmvfueyiugigqrwhhx.supabase.co:5432/postgres"
+DB_PASS = "Nqn7LbKSm8wUOOWS"
+
+# --- આ વિગતો બરાબર છે, તેને બદલશો નહીં ---
 DB_NAME = "postgres"
 DB_USER = "postgres"
-DB_PASS = "Nqn7LbKSm8wUOOWS"
 DB_PORT = "5432"
-
 TWILIO_ACCOUNT_SID = "ACecdb9f6cbd2c0b8e0b2b2591fd130ff9"
 TWILIO_AUTH_TOKEN = "fdf5cbcfc266b4d6636a201408525ac4"
-
 PROJECT_ID = "guesthousebot--tn9c"
-# --------------------
+# -----------------------------------------------
 
 app = Flask(__name__)
 
 def get_db_connection():
+    print("Attempting to connect to the database...")
     conn = psycopg2.connect(host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASS, port=DB_PORT)
+    print("Database connection successful.")
     return conn
 
 def setup_database():
@@ -32,15 +35,18 @@ def setup_database():
         cursor.execute("CREATE TABLE IF NOT EXISTS bookings (id SERIAL PRIMARY KEY, room_id INTEGER REFERENCES rooms(id), guest_name TEXT, check_in_date DATE NOT NULL, check_out_date DATE NOT NULL)")
         cursor.execute("SELECT count(*) FROM rooms")
         if cursor.fetchone()[0] == 0:
-            print("Adding initial rooms to the database...")
+            print("No rooms found. Adding initial rooms to the database...")
             rooms_to_add = [('Standard', 2, 1200.00), ('Deluxe', 2, 2000.00), ('Family Suite', 4, 3500.00)]
             cursor.executemany('INSERT INTO rooms (room_type, capacity, price_per_night) VALUES (%s, %s, %s)', rooms_to_add)
+        else:
+            print("Rooms table already exists.")
         conn.commit()
         cursor.close()
         conn.close()
-        print("Database setup checked/completed.")
+        print("Database setup checked/completed successfully.")
     except Exception as e:
-        print(f"Database setup failed: {e}")
+        print(f"FATAL ERROR during database setup: {e}")
+        # This will cause the app to crash, and the error will be in the Render logs.
 
 def detect_intent_with_parameters(project_id, session_id, text, language_code):
     session_client = dialogflow.SessionsClient()
@@ -66,6 +72,7 @@ def check_availability(people_count, date_str):
         else:
             return f"Sorry, no rooms are available for that date and capacity."
     except Exception as e:
+        print(f"ERROR in check_availability: {e}")
         return f"An error occurred while checking the database."
 
 @app.route("/voice", methods=['GET', 'POST'])
@@ -91,7 +98,7 @@ def gather():
             date = params.get('date')
             if people and date:
                 date_iso = date.isoformat() if hasattr(date, 'isoformat') else str(date)
-                bot_response = check_availability(int(people), date_iso) 
+                bot_response = check_availability(int(people), date_iso)
             else:
                 bot_response = "For when and for how many people would you like to book?"
         else:
@@ -108,8 +115,6 @@ with app.app_context():
     setup_database()
 
 if __name__ == "__main__":
-    if 'GOOGLE_APPLICATION_CREDENTIALS' not in os.environ:
-        print("Error: GOOGLE_APPLICATION_CREDENTIALS environment variable is not set.")
-    else:
-        print(">>> Voice Bot Server is running locally...")
-        app.run(host='0.0.0.0', port=5000)
+    # આ ભાગ ફક્ત લોકલ ટેસ્ટિંગ માટે છે, Render તેનો ઉપયોગ નહીં કરે
+    print(">>> Voice Bot Server is running locally...")
+    app.run(host='0.0.0.0', port=5000)
